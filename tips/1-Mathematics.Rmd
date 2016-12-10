@@ -1,0 +1,55 @@
+---
+title: "Mathematics and Basic Statistics"
+author: "Ning Yilin"
+date: "Last update on `r Sys.Date()`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    toc: true
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+    toc_depth: 3
+---
+
+```{r, include=FALSE}
+# global options
+library(knitr)
+opts_chunk$set(collapse = TRUE, echo = TRUE, eval = TRUE, warning = FALSE)
+```
+
+# Algebra
+
+## Mathematical Operations
+
+### Modulo
+
+```{r}  
+10 %% 3
+10 %/% 3
+```
+
+# Linear Algebra
+
+# Basic Statistics
+
+## General Linear Model vs Generalised Linear Model
+
+The following table is taken from [Wikipedia](https://en.wikipedia.org/wiki/Comparison_of_general_and_generalized_linear_models):
+
+[]() | General linear model | Generalized linear model
+:---------- | :----------------------------- | :--------------------------------
+Typical estimation method	| Least squares, best linear unbiased prediction | Maximum likelihood or Bayesian
+Special cases	| ANOVA, ANCOVA, MANOVA, MANCOVA, linear regression, mixed model | linear regression, logistic regression, Poisson regression, gamma regression
+Function in R |	lm() | glm()
+
+## Generating random variables from multivariate normal distribution
+
+```{r, eval = FALSE}
+# upper triangular matrix from cholescky decomposition
+cholesckyMat <- chol(Sigma)
+# n samples from standard normal distribution
+xStd <- rnorm(n = n, mean = 0, sd = 1)
+x <- muVec + cholesckyMat %*% xStd
+```

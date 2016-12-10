@@ -1,0 +1,548 @@
+---
+title: "Visualisation with Package grid"
+subtitle: "Last updated on `r Sys.Date()`"
+author: "Ning Yilin"
+date: "2016-05-15"
+output: 
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    toc: true
+    toc_depth: 3
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE, collapse = TRUE, fig.width = 6, fig.height = 6)
+```
+
+# Basic `grid`
+
+This session shows what we can do with the `grid` package alone. We use built-in 
+dataset `mtcars` for illustration.
+
+```{r}
+library(grid)
+data("mtcars")
+mtcars[, c("vs", "am", "gear", "carb")] <- 
+  lapply(mtcars[, c("vs", "am", "gear", "carb")], as.factor)
+summary(mtcars)
+```
+
+## Page Setup
+
+Think of a new graph as a piece of paper. By default, the bottom left corner of
+the paper is assigned coordinate (0, 0) and the top right corner (1, 1), and you 
+are free to draw anywhere on the paper by specifying the position relative to 
+the default coordinates. No margin is preserved in this case, unless you choose 
+not to draw anything beyond certain boundary.
+
+In many cases, however, you do wish to leave certain margin in your plot so that 
+it is easier to arrange your titles and axes. Furthermore, you may also want to 
+adjust the coordinate system in the plotting region according to your data. 
+This is easily done by pushing viewports on your current drawing region.
+
+### Margins and Coordinates
+
+Margins on each side of a page [bottom, left, top, right] is specified in 
+terms of number of lines. Margins default to be c(5.1, 4.1, 4.1, 2.1), same as 
+in par(mar).
+
+The default coordinate of the current viewport is always (0, 1). This can be 
+changed by specifying the scale of x and y coordinates when pushing a viewport.
+
+```{r}
+grid.rect(gp = gpar(lty = 3))
+pushViewport(plotViewport(c(4, 4, 1, 1), xscale = c(0, 5), yscale = c(3, 6)))
+grid.rect()
+grid.text("A new page")
+grid.text(label = c(0, 5), x = unit(c(0, 5), "native"), 
+          y = unit(c(-1, -1), "lines"))
+grid.text(label = c(3, 6), x = unit(c(-1, -1), "lines"), 
+          y = unit(c(3, 6), "native"))
+popViewport()
+```
+
+### Subpannels
+
+A page can be divided into several penals.
+
+```{r}
+grid.rect(gp = gpar(lty = 3))
+pushViewport(plotViewport(c(4, 4, 1, 1)))
+pushViewport(viewport(layout = grid.layout(nrow = 2, ncol = 2, 
+                                           widths = c(5, 3), 
+                                           heights = c(3, 5))))
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
+grid.rect()
+grid.text("Panel A")
+popViewport()
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 2))
+grid.rect()
+grid.text("Panel B")
+popViewport()
+pushViewport(viewport(layout.pos.row = 2, layout.pos.col = 1))
+grid.rect()
+grid.text("Panel C")
+popViewport()
+pushViewport(viewport(layout.pos.row = 2, layout.pos.col = 2))
+grid.rect()
+grid.text("Panel D")
+popViewport()
+popViewport()
+popViewport()
+```
+
+## Shapes
+
+### Standard Shapes
+
+```{r}
+pushViewport(plotViewport(margins = c(4, 4, 1, 1), 
+                          xscale = c(0, 4), yscale = c(0, 4)))
+# drawing multiple rectangles in a single command
+grid.rect(x = c(1, 2, 3, 2), y = c(2, 1, 2, 3), width = 0.5, height = 0.5, 
+          default.units = "native", 
+          gp = gpar(fill = "gray", col = "red"), draw = TRUE)
+# drawing a polygon
+grid.polygon(x = c(1.25, 2, 2.75, 2), y = c(2, 1.25, 2, 2.75), 
+             default.units = "native", 
+             gp = gpar(fill = "green", col = "yellow"), draw = TRUE)
+# drawing a polygon with irregular shape
+x <- sort(runif(10) * 4)
+y <- runif(10) + 1
+grid.polygon(x = c(x, rev(x)), y = c(y, rev(y) + 2), 
+             default.units = "native")
+# drawing a circle
+grid.circle(r = 0.15)
+# drawing an arrow
+grid.lines(x = c(0, 2), y = c(0, 2), default.units = "native", 
+           gp = gpar(col = "blue"), 
+           arrow = arrow(angle = 15, length = unit(0.2, units = "native"), 
+                         ends = "last"))
+popViewport()
+```
+
+- `grid.lines` and `arrow`
+
+Draws line segments. Can adjust line type, width and colour using parameter 
+`gp`. Can also draw arrows by adding in the `arrow` parameter to coltrol the
+angle, length, type and position of the arrow head.
+
+- `grid.rect`
+
+Draws rectangles. Can adjust line type, width and colour of the outlines and
+filling colour using parameter `gp`
+
+- `grid.points`
+
+Draws points. Can adjust outline and filling colour using parameter `gp`.
+Adjustment of point shape is done with parameter `pch` instead of `gp`
+
+- `grid.circle`
+
+Draws circles. Can adjust line type, width and colour of the outlines and
+filling colour using parameter `gp`
+
+- `grid.polygon`
+
+Draws polygons by specifying the coordinates for every corner in an
+**anti-clockwise** order. Can adjust line type, width and colour of the outlines
+and filling colour using parameter `gp`
+
+## Conventional Plots
+
+### Scatter Plot
+
+### Line Chart
+
+### Confidence Interval
+
+### Bar Chart
+
+```{r}
+#' Draws bar chart for given numerical variable.
+#' @param height Vector of heights of bars. This is also twice the height of 
+#'   centres fo each bar.
+#' @param x Vector of centre of bars. Defaults to be index of heights. With 
+#'   this parameter this function can also be used to make bar plots for 
+#'   multiple categories in the same plot. 
+#' @param width Width of each bar. Defaults to be \code{0.8}.
+#' @param drawXaxis, drawYaxis Whether to draw X and Y axes. Default to be 
+#'   \code{TRUE}.
+#' @param margins Margins for the resulting plot. Defaults to be no margin.
+#' @param xscale X scale for the resulting plot. Defaults to be 
+#'   \code{c(0.5, length(x) + 0.5)}.
+#' @param yscale Y scale for the resulting plot. Defaults to be 
+#'   \code{c(0, max(height, na.rm = TRUE))}.
+#' @param ... Other parameters to pass to \code{gp} of \code{grid.rect}, e.g. 
+#'   colour for the bars and their outline.
+#' @details Draws bar chart for given numerical variable. By default all values 
+#'   are taken to use native unit.
+gridBarChart <- function(height, x = seq_along(height), width = 0.8, 
+                         drawXaxis = TRUE, drawYaxis = TRUE, 
+                         xNames = names(height), 
+                         margins = numeric(4), 
+                         xscale = c(0.5, length(x) + 0.5), 
+                         yscale = c(0, max(height, na.rm = TRUE)), 
+                         ...) {
+  pushViewport(plotViewport(margins = margins, xscale = xscale, 
+                            yscale = yscale))
+  for (i in seq_along(x)) {
+    if (!is.na(height[i])) {
+      grid.rect(x = x[i], y = height[i] / 2, width = width, height = height[i], 
+                default.units = "native", gp = gpar(...))
+    }
+  }
+  if (drawXaxis) {
+    if (is.null(xNames)) {
+      xNames <- seq_along(height)
+    }
+    grid.xaxis(at = seq_along(height), label = xNames)
+  }
+  if (drawYaxis) {
+    grid.yaxis()
+  }
+  popViewport()
+}
+```
+
+```{r, fig.width = 10}
+yscale <- c(0, 35)
+margins <- c(4, 4, 4, 1)
+gridBarChart(height = mtcars$mpg, x = seq_along(mtcars$mpg) - 0.3, 
+             width = 0.3, margins = margins, yscale = yscale, 
+             fill = "steelblue")
+gridBarChart(height = mtcars$qsec, x = seq_along(mtcars$qsec), 
+             width = 0.3, drawXaxis = FALSE, drawYaxis = FALSE, 
+             margins = margins, yscale = yscale, 
+             fill = "darkorange")
+gridBarChart(height = mtcars$wt, x = seq_along(mtcars$wt) + 0.3, 
+             width = 0.3, drawXaxis = FALSE, drawYaxis = FALSE, 
+             margins = margins, yscale = yscale)
+pushViewport(plotViewport(margins = margins))
+grid.rect(x = 0.3, y = 1.2, width = 0.025, height = 0.1, 
+          gp = gpar(fill = "steelblue"))
+grid.text(label = "mpg", x = 0.3, y = 1.1)
+grid.rect(x = 0.5, y = 1.2, width = 0.025, height = 0.1, 
+          gp = gpar(fill = "darkorange"))
+grid.text(label = "qsec", x = 0.5, y = 1.1)
+grid.rect(x = 0.7, y = 1.2, width = 0.025, height = 0.1)
+grid.text(label = "wt", x = 0.7, y = 1.1)
+popViewport()
+```
+
+### Stacked Bar Plot
+
+### Boxplot
+
+### Heat Map
+
+#### Set Colour
+
+```{r}
+#' Sets colour for a single value
+#' @param value The value to set colour for.
+#' @param breaks A list containing two named vectors, \code{neg} with breaks for
+#'   the 'negative' values (i.e. values less than the perceived mid-point by
+#'   user), and \code{pos} containing the breaks for 'positive' values. Do not
+#'   include the  minimum or maximum. See \code{Details}.
+#' @param colourRange A vector containing 3 colours. As values increase, the 
+#'   corresponding colour will change from \code{colourRange[1]} to 
+#'   \code{colourRange[2]} (at user-defined mid-point) and then to
+#'   \code{colourRange[3]}. Default is \code{c("steelblue", "white",
+#'   "darkorange")}. See \code{Details}.
+#' @param special A list containing two components, \code{value} for the value 
+#'   to be assigned a unique colour to, and \code{colour} for the special
+#'   colour. Currently only support a single \code{value} within \code{breaks}.
+#'   Default is \code{NULL}.
+#' @details The idea of including \code{special} as a parameter is to 
+#'   emphasise on a single value that is special in the context, e.g. 0 for 
+#'   change in variable or 0.5 for proportion. \code{breaks$neg} and 
+#'   \code{breaks$pos} are then meant for normal values smaller and larger
+#'   than the special value. If there is no special value, \code{breaks} can be 
+#'   specified as either a vector or a list.
+#'   Bourder values: \code{(-Inf, c1)[c1 , c2)...[c[n - 1] , cn)[cn, Inf)}.
+#' @return Returns a vector of colours corresponding to values given, or a
+#'   vector of colours corresponding to the given colour breaks if no value is
+#'   specified.
+setColour <- function(values = NULL, breaks, 
+                      colourRange = c("steelblue", "white", "darkorange"), 
+                      special = NULL) {
+  # Function to find out the colours corresponding to values
+  f <- function(v, breaks, colourVec) {
+    # Return NA for NA
+    if (is.na(v)) {
+      return(NA)
+    }
+    # Find out breaks less than or equal to v
+    brks <- breaks[breaks <= v]
+    # If there is no such breaks, v is less than minimum
+    if (length(brks) == 0) {
+      return(colourVec[1])
+    }
+    # Else, find out the interval containing v
+    l <- which(breaks == brks[1]) + 1
+    # Return the colour corresponding to that interval
+    return(colourVec[l])
+  }
+  if (is.null(special)) {
+    # When there is no special value to consider, breaks can be a vector
+    breaks <- sort(unlist(breaks))
+    len <- length(breaks)
+    if (len == 0) {
+      stop(simpleError("Please specify breaks for values."))
+    }
+    if ((len %% 2) == 0) {
+      l <- len / 2
+      colourVec <- c(
+        colorRampPalette(c(colourRange[1], colourRange[2]))(l + 1)[1:l], 
+        colourRange[2], 
+        colorRampPalette(c(colourRange[2], colourRange[3]))(l + 1)[-1]
+      )
+    } else {
+      l <- (len + 1) / 2
+      colourVec <- c(
+        colorRampPalette(c(colourRange[1], colourRange[2]))(l + 1)[1:l], 
+        colorRampPalette(c(colourRange[2], colourRange[3]))(l + 1)[-1]
+      )
+    }
+    if (is.null(values)) {
+      return(colourVec)
+    }
+    sapply(values, function(v) f(v, breaks, colourVec))
+  } else {
+    # breaks$neg should only contain values less than special$value, and 
+    # breaks$pos should only contain values greater than special$value.
+    breaks$neg <- breaks$neg[which(breaks$neg < special$value)]
+    breaks$pos <- breaks$pos[which(breaks$pos > special$value)]
+    # When there is special value, breaks must be a list. One of the components 
+    # in breaks can be empty, but cannot be both.
+    if (length(unlist(breaks)) == 0) {
+      stop(simpleError(
+        paste("When there is special value, breaks must be a list.", 
+              "One of the components in breaks can be empty,", 
+              "but cannot be both.")
+      ))
+    }
+    len1 <- length(breaks$neg)
+    len2 <- length(breaks$pos)
+    if ((len1 != 0) | (len2 != 0)) {
+      colourVec1 <- colorRampPalette(c(colourRange[1], 
+                                       colourRange[2]))(len1 + 2)[1:(len1 + 1)]
+      colourVec2 <- colorRampPalette(c(colourRange[2], 
+                                       colourRange[3]))(len2 + 2)[-1]
+      # If values are not specified, return the vector of colours, including 
+      # the colour for special value.
+      if (is.null(values)) {
+        return(c(colourVec1, special$colour, colourVec2))
+      }
+      sapply(values, 
+             function(v) {
+               if (is.na(v)) {
+                 NA
+               } else if (v == special$value) {
+                 special$colour
+               } else if (v < special$value) {
+                 f(v, breaks$neg, colourVec1)
+               } else {
+                 f(v, breaks$pos, colourVec2)
+               }
+             })
+    } else if (len2 == 0) {
+      # If one of the components in breaks is empty, the problem reduces to the 
+      # case above.
+      colourVec1 <- colorRampPalette(c(colourRange[1], 
+                                       colourRange[2]))(len1 + 2)[1:(len1 + 1)]
+      if (is.null(values)) {
+        return(c(colourVec1, special$colour))
+      }
+      sapply(values, function(v) f(v, breaks$neg, colourVec1))
+    } else {
+      colourVec2 <- colorRampPalette(c(colourRange[2], 
+                                       colourRange[3]))(len2 + 2)[-1]
+      if (is.null(values)) {
+        return(c(special$colour, colourVec2))
+      }
+      sapply(values, function(v) f(v, breaks$pos, colourVec2))
+    }
+  }
+}
+```
+
+```{r}
+cols <- setColour(breaks = list(neg = c(-2, -1), pos = c(1, 2, 3)), 
+                  special = list(value = 0, colour = "green"))
+plot(x = seq_along(cols), y = rep(1, length(cols)), pch = 20, cex = 2, 
+     col = cols, xlab = "", ylab = "")
+```
+
+```{r}
+#' Draw a heatmap given the color of each rectangle
+#' @param colorMat A matrix of colors.
+#' @param colNames Names of each column.
+#' @param gap Width of white gap between rectangles so as to distinguish them. 
+#'   Default value is 0.01 (native).
+#' @param margine Margin when pushing viewport within the function. 
+drawHeatmap <- function(colorMat, colNames = NULL, gap = 0.01, 
+                        margin = c(4, 0, 0, 1)) {
+  # Make the colorMat upside down so that the first day is on the top. Also 
+  # revert noDataLIS and noDataIHIS.
+  colorMat <- colorMat[nrow(colorMat):1, ]
+  if (is.null(colNames)) {
+    colNames <- colnames(colorMat)
+  } else if ((length(colNames) != ncol(colorMat))) {
+    stop(simpleError(
+      "Please make sure length of column names is equal to numbr of columns of 
+      color matrix."))
+  }
+  pushViewport(plotViewport(margins = margin, 
+                            xscale = c(0.5, ncol(colorMat) + 0.5), 
+                            yscale = c(0.5, nrow(colorMat) + 0.5)))
+  for (i in 1:nrow(colorMat)) {
+    for (j in 1:ncol(colorMat)) {
+      grid.rect(x = j, y = i, width = 1 - gap, height = 1 - gap, 
+                default.units = "native", 
+                gp = gpar(fill = colorMat[i, j], col = NA))
+    }
+  }
+  # Column names
+  grid.text(label = colNames, x = unit(1:ncol(colorMat), "native"), 
+            y = unit(0, "lines"), just = "top", gp = gpar(cex = 3))
+  popViewport()
+}
+```
+
+```{r}
+valueMat <- matrix(rnorm(20 * 30), ncol = 20)
+```
+
+## Unconventional Plots
+
+### Broken Axis
+
+Adds a break on y axis. For this to work properly, the y value in the data needs 
+to be adjusted accordingly.
+
+```{r}
+pushViewport(plotViewport(c(4, 6, 1, 1), xscale = c(0, 10), yscale = c(0, 60)))
+  grid.rect()
+  grid.xaxis(at = seq(0, 10, 1), label = seq(0, 10, 1))
+  grid.yaxis(at = seq(0, 60, 10), label = c(seq(0, 40, 10), 1100, 1200))
+  grid.text("l", x = 0, y = 42.5, rot = -45, default.units = "native")
+  grid.text("l", x = 0, y = 43.5, rot = -45, default.units = "native")
+popViewport()
+```
+
+### Bars for Time Periods
+
+```{r}
+#' Draws coloured blocks to visualise time periods.
+#' @param periods A data.frame containing the starting and ending points of the 
+#'   time periods, with column names \code{start} and \code{end} respectively. 
+#'   All time points must be of type \code{POSIXct}.
+#' @param timeOrigin Time origin chosen for the visualisation. Defaults to be 
+#'   \code{NULL}, in which case it will be \code{0:0:0} of the first day in 
+#'   the input time points.
+#' @param margins Margins for the resulting plot. Defaults to be no margin.
+#' @param xscale X scale when pushing viewport for the resulting plot. Defaults 
+#'   to start from \code{0:0:0} of the first day, and end at \code{0:0:0} of 
+#'   the day following the last day of the given time period. For example, if 
+#'   the given time period starts from \code{1970-01-01 12:11:23} and ends at 
+#'   \code{1970-01-12 23:33:46}, then \code{xscale = as.numeric(c(t1, t2))}, 
+#'   where \code{t1} and \code{t2} are \code{POSIXct} variables for 
+#'   \code{1970-01-01 0:0:0} and \code{1970-01-13 0:0:0} respectively.
+#' @param y Passed to function \code{grid.rect} to determine the position of 
+#'   the coloured blocks. Should be a unit object. Defaults to be 
+#'   \code{unit(0.5, "npc")}.
+#' @param height Passed to function \code{grid.rect} to determine the height of 
+#'   the coloured blocks. Should be a unit object. Defaults to be 
+#'   \code{unit(1, "lines")}.
+#' @param ... Other parameters to pass to \code{gp} of \code{grid.rect}, e.g. 
+#'   colour for the coloured blocks and their outline.
+#' @param drawTimeAxis Determines whether to draw the time axis at the bottom 
+#'   of the resulting plot. Defaults to be \code{TRUE}. See \code{details}.
+#' @details The resulting plot includes coloured block to represent given time 
+#'   periods, and if \code{drawTimeAxis} a time axis at the bottom of the plot 
+#'   (\code{y = unit(c(0, 0), "npc")}) to indicate the dates covered by the 
+#'   periods. Only dates are printed to the time axis except the first and last
+#'   days, which also have abbreviated names of month.
+gridTimePeriod <- function(periods, timeOrigin = NULL, 
+                           margins = numeric(4), xscale = NULL, 
+                           y = unit(0.5, "npc"), height = unit(1, "lines"), 
+                           drawTimeAxis = TRUE, ...) {
+  # If timeOrigin is not specified, use the first day in the given time periods
+  if (is.null(timeOrigin)) {
+    timeOrigin <- as.POSIXct(strptime(format(periods$start[1], 
+                                             "%Y-%m-%d 0:0:0"), 
+                                      format = "%Y-%m-%d %H:%M:%S"))
+  }
+  if (is.null(xscale)) {
+    dayLast <- as.POSIXct(strptime(format(periods$end[nrow(periods)], 
+                                          "%Y-%m-%d 0:0:0"), 
+                                   format = "%Y-%m-%d %H:%M:%S"))
+    dayLast <- as.POSIXct(dayLast + as.difftime(1, units = "days"))
+    xscale <- as.numeric(c(timeOrigin, dayLast))
+  }
+  pushViewport(plotViewport(margins = margins, xscale = xscale))
+  # Draw coloured blocks for time periods
+  for (i in 1:nrow(periods)) {
+    row <- as.numeric(periods[i, ])
+    grid.rect(x = unit(mean(row), units = "native"), y = y, 
+              width = unit(row[2] - row[1] + 1, units = "native"), 
+              height = height, gp = gpar(...))
+  }
+  # Draw time axis (with ticks for days)
+  if (drawTimeAxis) {
+    grid.lines(y = c(0, 0))
+    days <- seq(from = timeOrigin, to = dayLast, 
+                by = as.difftime(1, units = "days"))
+    grid.points(x = unit(days, "native"), y = numeric(length(days)), pch = "|")
+    # Labels for days: only include month for the frist and last day
+    dayLabels <- format(days, "%d")
+    dayLabels[1] <- paste(dayLabels[1], format(days[1], "%b"))
+    dayLabels[length(days)] <- paste(dayLabels[length(days)], 
+                                     format(days[length(days)], "%b"))
+    grid.text(label = dayLabels, x = unit(days, "native"), 
+              y = unit(-1, "lines"))
+  }
+  popViewport()
+}
+```
+
+```{r, fig.height = 4}
+# Create data for plotting
+timeOrigin <- as.POSIXct(strptime(x = "2016-01-01 0:0:0", 
+                                  format = "%Y-%m-%d %H:%M:%S"))
+timePoints <- sort(timeOrigin + 
+                     as.difftime(rnorm(n = 10, mean = 36000, sd = 1800), 
+                     units = "mins"))
+periods <- data.frame(start = timePoints[c(1, 3, 5, 7, 9)], 
+                      end = timePoints[c(2, 4, 6, 8, 10)])
+kable(periods)
+gridTimePeriod(periods = periods, margins = c(4, 4, 4, 1), 
+               col = NA, fill = "steelblue")
+```
+
+# Saving Plot to File
+
+## Dumping Plots to PDF
+
+See file [`try.pdf`](try.pdf) for example of output.
+
+```{r}
+pdf("try.pdf")
+for (i in 1:10) {
+  grid.newpage()
+  pushViewport(plotViewport(margins = c(4, 4, 1, 1)))
+  grid.rect()
+  grid.text(i, y = 0.6)
+  grid.text(Sys.time(), y = 0.4)
+  popViewport()
+}
+dev.off()
+```

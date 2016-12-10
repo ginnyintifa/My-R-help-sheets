@@ -1,0 +1,83 @@
+---
+title: "Time And Date"
+author: "Ning Yilin"
+date: "Last updated on `r Sys.Date()`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    toc: true
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+    toc_depth: 3
+---
+
+```{r, include = FALSE}
+# global options
+library(knitr)
+opts_chunk$set(collapse = TRUE, echo = TRUE, eval = TRUE, cache = FALSE)
+```
+
+# Data Types
+
+## `POSIXct`
+
+- `typeof()`: `double`
+- Number of seconds since `1970-01-01`
+
+## `POSIXlt`
+
+- `typeof()`: `list`
+- `second`, `minute`, `hour`, `day of month`(1 - 31), `month of year`(0 - 11), 
+`year`(since 1900), `day of week`(0 - 6), `day of year`(1 - 365), 
+`daylight saving indices`
+
+**When `print`ed, these two data types give the same result by default.**
+
+Both data types can be compared using `>`, `<`, `==`, and are addable and 
+substractable. But to calculate time difference between two time points, it is 
+advisable to use function `difftime` instead:
+
+```{r, echo = TRUE, eval = FALSE}
+difftime(later, earlier, 
+         units = c("auto", "secs", "mins", "hours", "days", "weeks"))
+as.difftime(d, units)
+```
+
+# Type Conversion
+
+## `strftime`
+
+- Concerts time to string
+- Must supply specific format to convert into
+
+Units   | abbr | full | int
+:------ | :--- | :--- | :-----------------------------------
+weekday | `%a` | `%A` | `%u` (1 - 7) / `%w` (0 - 6)
+month   | `%b` = `%h` | `%B` | `%m` (1 - 12)
+year    | `%y` (00 - 99) | `%Y` | -
+date    | - | `%d` / `%e` | `%j` (001 - 366)
+hour    | - | - | `%H` (00 - 23) / `%I (0 - 12) + %p (AM, PM)`
+minute  | - | - | `%M` (00 - 59)
+second  | - | - | `%S` (00 - 59)
+
+Shortcuts for certain formats:
+
+Shortcut | Full format
+:-------- | :----------
+`%c`      | `%a %b %e %H:%M:%S %Y`
+`%C`      | centry
+`%D`      | `%m/%d/%y`
+`%F`      | `%Y-%m-%d`
+`%R`      | `%H:%M`
+`%T`      | `%H:%M:%S`
+
+## `strptime`
+
+- Converts string to time
+- Must supply specific format of input
+- Output is of type `POSIXlt` by default
+	  - `as.POSIXct(strptime(s, format))` converts the string `s` to `double`
+	  - This is to make sure that the resulting time variables can be saved as 
+	  elements in vectors and matrices

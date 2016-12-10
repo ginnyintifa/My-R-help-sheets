@@ -1,0 +1,228 @@
+---
+title: "General Tips"
+author: "Ning Yilin"
+date: "Last update on `r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    toc: true
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+    toc_depth: 3
+---
+
+```{r, include = FALSE}
+# global options
+library(knitr)
+opts_chunk$set(collapse = TRUE, echo = TRUE, eval = TRUE, cache = FALSE)
+```
+
+# About R Markdown
+
+This document is written using R Markdown and `knitr`. For more details on how 
+to write R Markdown files, see 
+[this](http://rmarkdown.rstudio.com/html_document_format.html) website.
+
+The following two lines, taken from the 
+[webpage for package `Armadillo`](http://arma.sourceforge.net/docs.html), 
+add a floating back-to-top buttom at the bottom right of the page.
+
+```{html}
+<a name="top"></a>
+<a style="display:scroll; position:fixed; bottom:5px; right:5px;" href="#top"><font size="-1">[top]</font></a>
+```
+
+# Use RStudio
+
+RStudio is a powerful IDE for `R` language that could be used to build up R 
+code, packages and projects (with version control supported by `Git` and `SVN`), 
+and produce `pdf`, `docx` or `html` reports with additional packages. 
+**Use RStudio whenever possible.**
+
+# Style guide
+
+A good code style makes code maintainance and sharing much more easily. Refer to 
+[this](https://google.github.io/styleguide/Rguide.xml) website for details.
+
+Some recommended practive:
+
+- Be consistent
+- Put empty space around math operators
+- Use `<-` instead of `=` to assign value
+- Put an empty space between `if`, `for` and `while` and the openning bracket
+- Put an empty space before the openning curly bracket and after the closing
+curly bracked
+
+# Resources
+
+## Quick-R
+
+[This website](http://www.statmethods.net/index.html) illustrates basic R 
+functions and statistics, including input (file formats, data structure, missing 
+data, date value), output, data type conversion.
+
+[This page](http://www.statmethods.net/advgraphs/parameters.html) in the website 
+shows commonly used `par()` arguments including `pch`, `lty` and `text`.
+
+## Advanced R
+
+[This book](http://adv-r.had.co.nz/) is written by 
+[Hadley Wickham](http://hadley.nz/), the author of many popular R packages 
+including `devtools`, `roxygen2`, `ggplot` and `dplyr`. The book provides an 
+in-depth review of R as a programing language.
+
+# Basic Commands and Keyboard Shortcuts
+
+## Install and remove packages
+
+```{r, eval = FALSE}
+install.package("packageName")
+remove.package("packageName")
+```
+
+## Different Ways to Time A Command
+
+### Package `rbenchmark`
+
+Function `benchmark` in this package compares the performance of functions (or 
+assess performance of a single function, depending on the input) by replicating 
+them multiple (100 by default) times and then reporting the average run time.
+
+```{r}
+library(rbenchmark)
+f1 <- function(n) {
+  s <- 0
+  for (i in 1:n) {
+    s <- s + i
+  }
+  s
+}
+f2 <- function(n) {
+  sum(1:n)
+}
+f3 <- function(n) {
+  n * (1 + n) / 2
+}
+benchmark(f1(1000), f2(1000), f3(1000), replications = 10000)
+```
+
+Package `microbenchmark` is able to assess run time of functions accurate to 
+millisecond if necessary.
+
+### Function `system.time()`
+
+```{r}
+count <- 0
+system.time(for (i in 1:10000) count <- count + i ^ 2)
+```
+
+## File Manipulation
+
+While function `system` enables programmers to use command line functionalities 
+such as `cp` and `mv`, it no longer works in Windows environment because of the 
+different syntax of system command followed. To avoid complication, it is 
+better to use a group of R functions in `base` package to manipulate files and 
+directories. The following example attempts to move a file `a.txt` in current 
+directory into folder `../f2`, using function `file.rename`.
+
+```{r eval = FALSE}
+if (!file.exists("../f2")) {
+  dir.create("../f2")
+}
+file.rename(from = "a.txt", to = "../f2/a.txt")
+```
+
+## Keyboard shortcuts
+
+Action | macOS Shortcut | Windows Shortcut
+:------------------------------------ | :------------ | :---------------
+Run a single line or selection | `[Command] + [Return]` | `[Control] + [Return]` 
+Source script | `[Command] + [Shift] + [S]` | `[Control] + [Shift] + [S]` 
+Clear console | `[Control] + [L]` | `[Control] + [L]`
+
+# General recommendation
+
+## Avoid `for` loops
+
+`for` loops are very slow in R. Replace them with functions from the `apply` 
+family whenever possible, and use packages such as `plyr`, `dplyr` and 
+`data.table` to manipulate data sets.
+
+## Add Progress Bars
+
+### For `for` loops
+
+For programmes with long looping, always remember to output on screen which 
+iteration the code is currently in, so as to access the performance of the code 
+more conveniently.  
+
+```{r, eval = FALSE}
+total <- 20
+# create progress bar
+pb <- txtProgressBar(min = 0, max = total, style = 3)
+for(i in 1:total){
+  Sys.sleep(0.1)
+  # update progress bar
+  setTxtProgressBar(pb, i)
+}
+close(pb)
+```
+
+### For `apply` family
+
+Use function `pb*pply` from package `pbapply` instead of `*pply`. 
+
+## Avoid `factor` whenever possible
+
+Operation done on `factor` may result output of other data types and hence 
+cause error. Refer to the book [Advanced R](http://adv-r.had.co.nz/) for detail.
+
+# Working with Different OS
+
+macOS, Linux and Windows are the 3 major operating systems of current time. 
+While macOS and Linux share many similarities, they are both quite different 
+from Windows system in aspects such as file system and command line syntax.
+
+## Choose the code to execute based on current OS environment
+
+Function `Sys.info` returns system information including the name of OS in use.
+Used together with control `switch`, this enables programmers to choose which 
+OS-specific value to set or function to use. The example bellow shows how to 
+set different working directories in different OS.
+
+```{r eval = FALSE}
+wd <- switch(Sys.info()[['sysname']],
+             Windows = "/Users/mdcnyl/Google Drive/Active Projects/pig",
+             Linux = "~/pig",
+             Darwin = "~/Google Drive/Active Projects/pig") # macOS
+setwd(wd)
+```
+
+# R Addins
+
+## Addin Manager
+
+```{r eval = FALSE}
+devtools::install_github('rstudio/DT')
+devtools::install_github("csgillespie/addinmanger")
+```
+
+When opened, a list of Addins available are shown, with Addins already installed 
+highlighted in blue. To install new Addins, simply click on them to highlight 
+them in blue as well. To remove existing Addins, click on them to remove the 
+highlight. After clicking `Done`, current changes will be implemented and 
+selected Addins will be installed or removed accordingly.
+
+The list is not exhaustive, and the Addin cannot remove Addins that are not in 
+the list.
+
+## Colour Picker
+
+```{r eval = FALSE}
+install.packages("colourpicker")
+```
+
+This Addin allows users to choose colours in R by simple clicking. It allows 
+users to select multiple colours at once.

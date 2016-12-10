@@ -1,0 +1,217 @@
+---
+title: "Data manipulation"
+author: "Ning Yilin"
+date: "Last update on `r Sys.Date()`"
+output: 
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    toc: true
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+    toc_depth: 3
+---
+
+```{r, include = FALSE}
+library(knitr)
+opts_chunk$set(collapse = TRUE, eval = TRUE, echo = TRUE, warning = FALSE)
+```
+
+# Read Input from File
+
+## Supported Formats
+
+### `txt` and `csv`
+
+### Excel Files
+
+Function `read.xls` in package `gdata` can import `xls` and `xlsx` files into R 
+through `perl`. An excel file will be converted to a `csv` file before 
+importing, so the user must have the right to write in the system `tmp` folder. 
+Apart from parameters in `read.xls` function, users could also use parameters 
+from function `read.csv`.
+
+In a Windows environment, `perl` is usually not pre-installed. In this case, 
+user needs to manually download and install `perl`. But once `perl` is 
+installed, the system will automatically update the directory to `perl.exe`, and
+user can call `read.xls` data without having to specify the location of `perl`.
+
+```{r, eval = FALSE}
+library(gdata)
+data <- read.xls(file = someInput, sheet = 1, header = TRUE, 
+                 na.string = c("NA", "", " "), colClasses = "character")
+```
+
+Package `xlsx` also provides function to read in Excel files, but it has problem
+with date and time variables.
+
+### Stata Data Files
+
+### SAS
+
+### SPSS
+
+## `read.table` vs `read.csv` vs `data.table::fread`
+
+## Missingness
+
+## Date and Time
+
+# Output Data to File
+
+## Writing table without column names
+
+```{r}
+#' Reading in file, preventing R from modifying its column names
+#' @details When a column name in an input file contains space, R will join the 
+#'   separate words with \code{.}. This function prevents R from doing this to 
+#'   the column names.
+#' @param file Path to the input file.
+#' @param header Whether the input file has headers.
+#' @param ... Other parameter that is accepted by built-in R function
+#'   \code{read.csv}.
+#' @return Returns a \code{data.frame} of the input data, with column names 
+#'   exactly the same as in the original input file. 
+readFileReserveHeader <- function(file, header = TRUE, ...) {
+  if (header) {
+    datain <- read.csv(file = file, header = FALSE, ...)
+    cnames <- as.vector(sapply(datain[1, ], as.character))
+    datain <- datain[-1, ]
+    names(datain) <- cnames
+    datain
+  } else {
+    read.csv(file = file, header = FALSE, ...)
+  }
+}
+#' Writing data to a csv file, preventing R from modifying its column names
+#' @details When a column name in a \code{data.frame} contains space, R will
+#'   join the separate words with \code{.}. This function prevents R from doing
+#'   this to the column names.
+#' @param data The \code{data.frame} to write. Must have column names.
+#' @param file Path to the input file.
+writeFileReserveHeader <- function(data, file) {
+  cnames <- names(data)
+  data <- rbind(cnames, as.matrix(data))
+  write.table(data, file = file, sep = ",", row.names = FALSE, 
+              col.names = FALSE)
+}
+```
+
+Users can specify strings to treat as `NA`. By default, texts will be read in 
+as factors. To avoid this, use the `colClasses` parameter. This also avoids 
+reading in date and time as strange numbers.
+
+By default the input will be saved as a `data.frame`, even when there is only
+one column in the data. 
+
+```{r, eval = FALSE}
+data <- read.csv(file = someInput, header = TRUE, na.string = c("NA", "", " "), 
+                 colClasses = "character")
+```
+
+# Data Exploration
+
+It is important to understand a new dataset before fitting any model to it or 
+make any hypothesis based on it.
+
+## Visualise
+
+Use visualisation (link to the file).
+
+## Missingness
+
+When reading input from a `csv` file, empty columns and rows may also be 
+included, which may cause unexpected errors. 
+
+```{r, eval=FALSE}
+# first of all, read in empty string as NA
+table <- read.csv(file = file, na.string = c("NA", "", " "))
+
+```
+
+`complete.cases`
+`anyNA`
+
+Other codes used for missingess, e.g. `999`. Also depends on context. Read code 
+book.
+
+## Duplicates
+
+```{r}
+# find unique rows in a matrix
+temp <- matrix(c(1, 1, 1, 2, 2, 2, 3, 3, 5), nrow = 3)
+temp
+unique(temp)
+```
+
+# Data Manipulation
+
+## Subsetting
+
+### Basic
+
+- `which`
+- `subset`
+
+```{r}    
+x <- c(1:20, 20:1)
+y <- 1:40
+tb <- cbind(x, y)
+subset(x = tb, x > 11 & y < 14, select = x)
+# package "dplyr" is more efficient for data subsetting and more manipulations.
+```
+
+#### Equality
+
+```{r, eval=FALSE}
+# do not use == to compare two double numbers
+isTRUE(all.equal(x, y)) # not vectorised
+```
+
+#### Membership
+
+```{r, eval=TRUE}
+x <- c(1:20, 20:1)
+y <- 1:40
+tb <- cbind(x, y)
+14 %in% x
+14 %in% tb
+match(x = 11, table = x)
+match(x = 21, table = x)
+match(x = 11, table = tb)
+which(tb == 11)
+```  
+
+### `plyr`
+
+### `ddply`
+
+### `data.table`
+
+## Sorting
+
+### Single Vector
+
+`order`
+`sort`
+
+### Multiple Vectors, Matrix, or `data.frame`
+
+`order`
+`sort.list`
+
+```{r, eval=FALSE}
+# sort data frame df first by column a, ascending, and then by column b, descending
+df <- df[with(df, order(a, -b)), ]
+```
+
+## Merging
+
+```{r}
+A <- data.frame(x1 = c("a", "b", "c"), x2 = 1:3, x3 = rnorm(3))
+A
+B <- data.frame(y1 = c("a", "b"), y2 = 1:2, y3 = rnorm(2, 1, 1))
+B
+merge(A, B, by.x = c("x1", "x2"), by.y = c("y1", "y2"), all.x = TRUE)
+```
