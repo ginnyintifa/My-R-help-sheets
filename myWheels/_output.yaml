@@ -1,0 +1,5 @@
+prettydoc::html_pretty:
+  theme: hpstr 
+  highlight: github
+  toc: true
+  toc_depth: 3

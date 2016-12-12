@@ -2,6 +2,12 @@
 title: "Visualisation"
 author: "Ning Yilin"
 date: "Last update on `r Sys.Date()`"
+---
+
+```{r, include = FALSE}
+# I personally prefer this style because it provides a floating table of 
+# content:
+'
 output:
   html_document:
     theme: flatly
@@ -11,7 +17,14 @@ output:
       collapsed: false
       smooth_scroll: false
     toc_depth: 3
----
+'
+# But the knitted HTML file would be too large for Github to display. If you 
+# are interested you can replace the current `output` chunk in the YAML code 
+# above and try yourself.
+```
+
+<a name="top"></a>
+<a style="display:scroll; position:fixed; bottom:5px; right:5px;" href="#top"><font size="-1">[top]</font></a>
 
 ```{r, include = FALSE}
 # global options
