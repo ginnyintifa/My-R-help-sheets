@@ -121,7 +121,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul>
 </div>
 
-<p><a name="top"></a> <a style="display:scroll; position:fixed; bottom:5px; right:5px;" href="#top"><font size="-1">[top]</font></a></p>
+<p><a name="top"></a> <a style="display:scroll; position:fixed; bottom:5px; right:5px;" href="#top"><font size="-1">[top]</font></a> <a style="display:scroll; position:fixed; bottom:5px; left:5px;" href="https://github.com/nyilin/My-R-help-sheets"><font size="-1">[Back to index]</font></a></p>
 <div id="read-input-from-file" class="section level1">
 <h1>Read Input from File</h1>
 <div id="supported-formats" class="section level2">
@@ -300,20 +300,20 @@ df &lt;-<span class="st"> </span>df[<span class="kw">with</span>(df, <span class
 <h2>Merging</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">A &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x1 =</span> <span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>), <span class="dt">x2 =</span> <span class="dv">1</span>:<span class="dv">3</span>, <span class="dt">x3 =</span> <span class="kw">rnorm</span>(<span class="dv">3</span>))
 A
-##   x1 x2        x3
-## 1  a  1 -1.458994
-## 2  b  2  2.023536
-## 3  c  3 -0.475140
+##   x1 x2          x3
+## 1  a  1  0.06343563
+## 2  b  2  0.44296894
+## 3  c  3 -0.15565443
 B &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y1 =</span> <span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>), <span class="dt">y2 =</span> <span class="dv">1</span>:<span class="dv">2</span>, <span class="dt">y3 =</span> <span class="kw">rnorm</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>))
 B
-##   y1 y2         y3
-## 1  a  1  0.1505067
-## 2  b  2 -1.0528460
+##   y1 y2        y3
+## 1  a  1 1.0109624
+## 2  b  2 0.8584139
 <span class="kw">merge</span>(A, B, <span class="dt">by.x =</span> <span class="kw">c</span>(<span class="st">&quot;x1&quot;</span>, <span class="st">&quot;x2&quot;</span>), <span class="dt">by.y =</span> <span class="kw">c</span>(<span class="st">&quot;y1&quot;</span>, <span class="st">&quot;y2&quot;</span>), <span class="dt">all.x =</span> <span class="ot">TRUE</span>)
-##   x1 x2        x3         y3
-## 1  a  1 -1.458994  0.1505067
-## 2  b  2  2.023536 -1.0528460
-## 3  c  3 -0.475140         NA</code></pre></div>
+##   x1 x2          x3        y3
+## 1  a  1  0.06343563 1.0109624
+## 2  b  2  0.44296894 0.8584139
+## 3  c  3 -0.15565443        NA</code></pre></div>
 </div>
 </div>
 </div><!-- /.entry-content -->

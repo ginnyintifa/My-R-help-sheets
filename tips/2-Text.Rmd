@@ -25,6 +25,7 @@ output:
 
 <a name="top"></a>
 <a style="display:scroll; position:fixed; bottom:5px; right:5px;" href="#top"><font size="-1">[top]</font></a>
+<a style="display:scroll; position:fixed; bottom:5px; left:5px;" href="https://github.com/nyilin/My-R-help-sheets"><font size="-1">[Back to index]</font></a>
 
 ```{r, include = FALSE}
 # global options
