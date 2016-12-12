@@ -7,7 +7,7 @@ A summary of what I have learnt so far about R and statistics.
 ## General Tips
 
 - [General Tips](http://htmlpreview.github.com/?tips/0-General.html)
-- [Mathematics and Statistics](tips/1-Mathematics.html)
+- [Mathematics and Statistics](http://htmlpreview.github.io/?https://github.com/nyilin/My-R-help-sheets/blob/master/tips/1-Mathematics.html)
 - [Text](tips/2-Text.html)
 - [Data Manipulation](tips/3-Data_manipulation.html)
 - [Visualisation](tips/4-Visualisation.html)
